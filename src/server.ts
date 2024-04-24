@@ -25,6 +25,7 @@ import {
   translateText,
 } from './i18n'
 import { decodeHTML } from './html'
+import { appendFileSync } from 'fs';
 
 autoStartServer({
   debug: env.NODE_ENV == 'development',
@@ -397,3 +398,19 @@ let port = env.PORT
 app.listen(port, () => {
   print(port)
 })
+
+app.post(
+  '/submit-email',
+  express.urlencoded({ extended: false }),
+  (req, res, next) => {
+    const { email } = req.body;
+    if (!email) {
+      res.status(400);
+      res.json({ error: 'Email address is required' });
+      return;
+    }
+    const emailFilePath = resolve(__dirname, '..', 'email.txt');
+    appendFileSync(emailFilePath, email + '\n');
+    res.json({ message: 'Email address submitted successfully' });
+  }
+);
